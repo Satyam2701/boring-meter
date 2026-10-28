@@ -85,6 +85,5 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 
 ## Not done or partial
 
-- License: not selected (owner decision). `claude plugin validate --profile directory` flags this for directory submission.
 - Linux and Windows: the full test suite passes in CI on both. Not verified there: installing the plugin in Claude Code and running the `bin/boring-meter` sh launcher from Claude Code on Windows (it may need Git Bash).
 - No hard Claude Code version gate: the transcript format is undocumented, so compatibility is detected from data instead.

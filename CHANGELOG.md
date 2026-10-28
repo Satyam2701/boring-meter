@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Licensed under MIT (`LICENSE`, `license` in plugin.json).
 - GitHub Actions test matrix for Ubuntu 24.04, macOS and Windows with Python 3.9 and 3.12; all six jobs pass.
 - Windows fixes found by CI: a lock file being released no longer makes another writer fail (it waits instead), excluded projects match with Windows path separators, and `UTC` works without a timezone database (other zone names explain how to install `tzdata`).
 - Windows storage fixes: JSONL appends and lock files use binary-mode descriptors so lines end in LF, and atomic writes retry briefly when `os.replace` is blocked by a reader.

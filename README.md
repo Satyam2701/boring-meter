@@ -169,4 +169,4 @@ Optionally remove the marketplace with `claude plugin marketplace remove boring-
 
 ## License
 
-No license has been selected yet. Until one is chosen, all rights are reserved by the author.
+MIT. See [LICENSE](LICENSE).

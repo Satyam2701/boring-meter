@@ -6,5 +6,12 @@
   "author": {
     "name": "Satyam Tiwari"
   },
-  "keywords": ["usage", "tokens", "cost", "optimization", "local-first"]
+  "keywords": [
+    "usage",
+    "tokens",
+    "cost",
+    "optimization",
+    "local-first"
+  ],
+  "license": "MIT"
 }
