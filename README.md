@@ -32,7 +32,7 @@ Everything runs locally with the Python standard library. No network requests, n
 | Claude Code | 2.1.311 (plugin validation, `--plugin-dir` load, marketplace install and uninstall, headless skill invocation) |
 | Transcript format | Records written by Claude Code 2.1.229 to 2.1.311 |
 | Python | 3.9.6 and 3.14.7 on macOS (full test suite on both) |
-| Operating systems | macOS tested. Linux and Windows paths are implemented but not tested |
+| Operating systems | macOS tested locally. Linux and Windows code paths are implemented and covered by simulated-platform unit tests on macOS, and a CI workflow (`.github/workflows/tests.yml`) is configured for Ubuntu, macOS and Windows with Python 3.9 and 3.12, but no CI run has been observed yet, so Linux and Windows remain untested |
 
 Other versions may work but have not been tested.
 
@@ -143,7 +143,9 @@ Settings apply on the next command. Nothing requires restarting Claude Code exce
 python3 -m unittest discover -s tests -t .
 ```
 
-The suite has 135 tests: unit tests for every module, integration tests that run the real launcher as a subprocess (acceptance scenarios A to L, offline execution with sockets blocked, missing Python runtime, concurrent writers, the hook script, a 10,000-record benchmark), and plugin validation through the `claude` CLI when it is installed. All fixtures are synthetic and generated into temporary directories (`tests/fixtures/build.py`).
+The suite has 144 tests: unit tests for every module (including each platform branch of the data directory choice, simulated, and disk-full handling during atomic writes), integration tests that run the real launcher as a subprocess (on Windows they run `python -m boring_meter` with `src` on `PYTHONPATH` instead, and the missing-runtime launcher test is skipped) (acceptance scenarios A to L, offline execution with sockets blocked, missing Python runtime, concurrent writers, the hook script, a 10,000-record benchmark), and plugin validation through the `claude` CLI when it is installed. All fixtures are synthetic and generated into temporary directories (`tests/fixtures/build.py`).
+
+GitHub Actions runs the same command on `ubuntu-latest`, `macos-latest` and `windows-latest` with Python 3.9 and 3.12 (`.github/workflows/tests.yml`). The `claude` CLI is not installed there, so plugin validation is skipped in CI.
 
 ## Troubleshooting
 

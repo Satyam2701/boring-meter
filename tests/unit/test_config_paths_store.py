@@ -1,13 +1,16 @@
+import errno
 import json
 import os
 import threading
+from pathlib import Path
+from unittest import mock
 
 from tests.helpers import TempEnvTestCase
 
-from boring_meter import config
+from boring_meter import config, paths, store
 from boring_meter.errors import BMError
 from boring_meter.paths import validate_output_path
-from boring_meter.store import append_jsonl, atomic_write_json, iter_jsonl, read_json
+from boring_meter.store import append_jsonl, atomic_write_json, atomic_write_text, iter_jsonl, read_json
 
 
 class ConfigTests(TempEnvTestCase):
@@ -82,6 +85,52 @@ class PathTests(TempEnvTestCase):
             validate_output_path(str(self.tmp / "sub" / ".." / ".." / os.path.basename(str(self.tmp)) / "claude" / "y.md"))
 
 
+class _OSView:
+    """Stands in for the os module inside one boring_meter module, with some attributes replaced.
+
+    Patching os.name itself would also switch pathlib to WindowsPath and break it.
+    """
+
+    def __init__(self, name, **overrides):
+        self.name = name
+        self.__dict__.update(overrides)
+
+    def __getattr__(self, attr):
+        return getattr(os, attr)
+
+
+class DataDirTests(TempEnvTestCase):
+    """Each platform branch of paths.data_dir, exercised by faking sys.platform and os.name."""
+
+    with_fixtures = False
+
+    def data_dir_for(self, platform, os_name, env):
+        keep = {k: v for k, v in os.environ.items() if k not in ("BORING_METER_DATA_DIR", "LOCALAPPDATA", "XDG_DATA_HOME")}
+        keep.update(env)
+        with mock.patch.dict(os.environ, keep, clear=True), \
+                mock.patch.object(paths.sys, "platform", platform), mock.patch.object(paths, "os", _OSView(os_name)):
+            return paths.data_dir()
+
+    def test_override_wins_everywhere(self):
+        for platform, os_name in (("darwin", "posix"), ("linux", "posix"), ("win32", "nt")):
+            got = self.data_dir_for(platform, os_name, {"BORING_METER_DATA_DIR": str(self.tmp / "custom")})
+            self.assertEqual(got, self.tmp / "custom")
+
+    def test_macos(self):
+        self.assertEqual(self.data_dir_for("darwin", "posix", {}),
+                         Path.home() / "Library" / "Application Support" / "boring-meter")
+
+    def test_linux_xdg_and_default(self):
+        self.assertEqual(self.data_dir_for("linux", "posix", {"XDG_DATA_HOME": str(self.tmp / "xdg")}),
+                         self.tmp / "xdg" / "boring-meter")
+        self.assertEqual(self.data_dir_for("linux", "posix", {}), Path.home() / ".local" / "share" / "boring-meter")
+
+    def test_windows_localappdata_and_default(self):
+        self.assertEqual(self.data_dir_for("win32", "nt", {"LOCALAPPDATA": str(self.tmp / "local")}),
+                         self.tmp / "local" / "boring-meter")
+        self.assertEqual(self.data_dir_for("win32", "nt", {}), Path.home() / "AppData" / "Local" / "boring-meter")
+
+
 class StoreTests(TempEnvTestCase):
     with_fixtures = False
 
@@ -136,3 +185,42 @@ class StoreTests(TempEnvTestCase):
                 with file_lock(target, timeout=0.2):
                     pass
         self.assertEqual(ctx.exception.code, "LOCK_TIMEOUT")
+
+    def test_disk_full_during_replace_maps_to_storage_full(self):
+        path = self.tmp / "state" / "s.json"
+        atomic_write_text(path, "old\n")
+        with mock.patch.object(store.os, "replace", side_effect=OSError(errno.ENOSPC, "No space left on device")):
+            with self.assertRaises(BMError) as ctx:
+                atomic_write_text(path, "new\n")
+        self.assertEqual(ctx.exception.code, "STORAGE_FULL")
+        self.assertEqual(path.read_text(), "old\n")
+        self.assertEqual([p.name for p in path.parent.iterdir()], ["s.json"])
+
+    def test_disk_full_during_write_maps_to_storage_full(self):
+        path = self.tmp / "state" / "s.json"
+        with mock.patch.object(store.os, "fsync", side_effect=OSError(errno.ENOSPC, "No space left on device")):
+            with self.assertRaises(BMError) as ctx:
+                atomic_write_text(path, "new\n")
+        self.assertEqual(ctx.exception.code, "STORAGE_FULL")
+        self.assertEqual(list(path.parent.iterdir()), [])
+
+    def test_appended_lines_end_with_lf_only(self):
+        path = self.tmp / "events.jsonl"
+        append_jsonl(path, {"a": 1})
+        append_jsonl(path, {"b": 2})
+        self.assertEqual(path.read_bytes(), b'{"a": 1}\n{"b": 2}\n')
+
+    def test_windows_replace_retries_while_target_is_busy(self):
+        busy = PermissionError(errno.EACCES, "Access is denied")
+        replace = mock.Mock(side_effect=[busy, busy, None])
+        with mock.patch.object(store, "os", _OSView("nt", replace=replace)), mock.patch.object(store.time, "sleep"):
+            store._replace("a", "b")
+        self.assertEqual(replace.call_count, 3)
+
+    def test_replace_does_not_retry_off_windows(self):
+        busy = PermissionError(errno.EACCES, "Permission denied")
+        replace = mock.Mock(side_effect=busy)
+        with mock.patch.object(store, "os", _OSView("posix", replace=replace)):
+            with self.assertRaises(PermissionError):
+                store._replace("a", "b")
+        self.assertEqual(replace.call_count, 1)

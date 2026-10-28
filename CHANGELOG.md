@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- GitHub Actions test matrix for Ubuntu, macOS and Windows with Python 3.9 and 3.12 (configured, not yet run).
+- Windows storage fixes: JSONL appends and lock files use binary-mode descriptors so lines end in LF, and atomic writes retry briefly when `os.replace` is blocked by a reader.
+- Tests for disk-full handling during atomic writes (`STORAGE_FULL`), each platform's data directory choice, and Windows-friendly integration tests (`python -m boring_meter` instead of the sh launcher).
+
 ## 0.1.0 (2026-10-28)
 
 First MVP release.
