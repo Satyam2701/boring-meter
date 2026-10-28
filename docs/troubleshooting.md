@@ -25,6 +25,7 @@ Errors print as `Boring Meter error [CODE]: message` with a `Hint:` line. With `
 | `INVALID_OUTPUT_PATH` | Directory, missing parent folder, or a path inside Claude Code's config directory | Choose a file in an existing folder |
 | `INVALID_EXPERIMENT` / result `invalid` | Missing runs, incomplete data, different models, or the same session recorded twice | Record comparable runs; see `experiment show ID` reasons |
 | `PROPOSAL_STALE` | The file changed after the proposal was made | Run `/boring-meter:optimize` again |
+| `INVALID_CONFIG` about a timezone database | Windows Python ships without IANA timezone data | `python -m pip install tzdata`, or clear the setting: `boring-meter settings set time.timezone ''` (UTC always works) |
 | Records with future timestamps | System clock or timezone wrong | Check the clock; set `time.timezone` if days look shifted |
 | Hook events not recorded | Collection disabled, or the plugin was installed in this session | `settings set collection.instruction_events true`; `/reload-plugins` |
 | Interrupted command | Ctrl+C | Safe: writes are atomic, so files are either old or complete |

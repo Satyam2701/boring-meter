@@ -91,7 +91,11 @@ class TranscriptAdapterTests(TempEnvTestCase):
         outside = self.tmp / "outside.jsonl"
         outside.write_text((self.claude_dir / "projects" / "-synthetic-alpha" / "synthetic-a1.jsonl").read_text())
         link = self.claude_dir / "projects" / "-synthetic-alpha" / "link.jsonl"
-        os.symlink(str(outside), str(link))
+        try:
+            os.symlink(str(outside), str(link))
+        except (OSError, NotImplementedError) as exc:
+            # Windows only allows symlinks with Developer Mode or an elevated shell.
+            self.skipTest("cannot create symlinks here (%s)" % exc)
         ds = self.dataset()
         self.assertTrue(any(p.endswith("link.jsonl") for p, _r in ds.skipped_files))
 

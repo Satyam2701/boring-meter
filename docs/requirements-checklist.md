@@ -19,7 +19,7 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 | Terminal report and JSON export | Done | `report` (Markdown and JSON, `--save`, `--output`); every command has `--json` |
 | Before-and-after experiment recording | Done | `experiments.py`; unit and CLI tests |
 | Local settings and privacy controls | Done | `config.py`, `settings` command, exclusions, retention, export, delete |
-| Automated tests and documentation | Done | 135 tests; README and `docs/` |
+| Automated tests and documentation | Done | 147 tests; README and `docs/` |
 
 ## Acceptance scenarios
 
@@ -48,7 +48,7 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 | Usage source unavailable | Source status and empty state (Scenario L) |
 | Corrupted local record | Malformed lines skipped and counted; corrupt cache rebuilt; corrupt state files raise `CORRUPTED_RECORD` |
 | Permission denied | `PERMISSION_DENIED` mapping; unreadable transcripts listed as skipped |
-| Storage full | `STORAGE_FULL` mapping (not exercised by a test) |
+| Storage full | `STORAGE_FULL` mapping; disk full during an atomic write leaves the old file intact and no temp file (tested with a simulated ENOSPC) |
 | Invalid configuration | `INVALID_CONFIG` with hint (tested) |
 | Unknown model pricing | Left unpriced with reason (tested) |
 | Unsupported source schema | Non-transcript files ignored; config and pricing schema versions checked (tested) |
@@ -77,8 +77,8 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 | Local reporting without paid APIs | Yes |
 | Privacy and retention documented | Yes (`docs/privacy.md`) |
 | Experiments work with valid data | Yes |
-| Unit and integration tests pass | Yes, 135 of 135 on Python 3.9.6 and 3.14.7 |
-| End-to-end tests in a supported environment | Yes on macOS with Claude Code 2.1.311; not run on Linux or Windows |
+| Unit and integration tests pass | Yes: 147 tests locally on macOS (Python 3.9.6 and 3.14.7), and in CI on Ubuntu 24.04, macOS and Windows with Python 3.9 and 3.12 (plugin validation skipped in CI; 2 platform skips on Windows) |
+| End-to-end tests in a supported environment | Yes on macOS with Claude Code 2.1.311. The CLI integration tests run on Linux and Windows in CI, but Claude Code itself was not run there |
 | Installation and troubleshooting documentation | Yes |
 | No secrets or unnecessary user content collected | Yes |
 | No em dashes | Yes (enforced by `test_copy_rules.py`) |
@@ -86,6 +86,5 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 ## Not done or partial
 
 - License: not selected (owner decision). `claude plugin validate --profile directory` flags this for directory submission.
-- Linux and Windows: implemented, not tested.
-- Storage-full handling is implemented but not exercised by an automated test.
+- Linux and Windows: the full test suite passes in CI on both. Not verified there: installing the plugin in Claude Code and running the `bin/boring-meter` sh launcher from Claude Code on Windows (it may need Git Bash).
 - No hard Claude Code version gate: the transcript format is undocumented, so compatibility is detected from data instead.

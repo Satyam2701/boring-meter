@@ -32,7 +32,7 @@ Everything runs locally with the Python standard library. No network requests, n
 | Claude Code | 2.1.311 (plugin validation, `--plugin-dir` load, marketplace install and uninstall, headless skill invocation) |
 | Transcript format | Records written by Claude Code 2.1.229 to 2.1.311 |
 | Python | 3.9.6 and 3.14.7 on macOS (full test suite on both) |
-| Operating systems | macOS tested. Linux and Windows paths are implemented but not tested |
+| Operating systems | Test suite passes in CI on Ubuntu 24.04, macOS and Windows with Python 3.9 and 3.12 (2026-10-28), and locally on macOS. Claude Code plugin install and invocation were verified on macOS only; running the `bin/boring-meter` sh launcher from Claude Code on Windows is not verified |
 
 Other versions may work but have not been tested.
 
@@ -143,7 +143,9 @@ Settings apply on the next command. Nothing requires restarting Claude Code exce
 python3 -m unittest discover -s tests -t .
 ```
 
-The suite has 135 tests: unit tests for every module, integration tests that run the real launcher as a subprocess (acceptance scenarios A to L, offline execution with sockets blocked, missing Python runtime, concurrent writers, the hook script, a 10,000-record benchmark), and plugin validation through the `claude` CLI when it is installed. All fixtures are synthetic and generated into temporary directories (`tests/fixtures/build.py`).
+The suite has 147 tests: unit tests for every module (including each platform branch of the data directory choice, simulated, and disk-full handling during atomic writes), integration tests that run the real launcher as a subprocess (on Windows they run `python -m boring_meter` with `src` on `PYTHONPATH` instead, and the missing-runtime launcher test is skipped) (acceptance scenarios A to L, offline execution with sockets blocked, missing Python runtime, concurrent writers, the hook script, a 10,000-record benchmark), and plugin validation through the `claude` CLI when it is installed. All fixtures are synthetic and generated into temporary directories (`tests/fixtures/build.py`).
+
+GitHub Actions runs the same command on `ubuntu-24.04`, `macos-latest` and `windows-latest` with Python 3.9 and 3.12 (`.github/workflows/tests.yml`). The `claude` CLI is not installed there, so plugin validation is skipped in CI. On Windows, two more tests skip: the daylight-saving test (Windows Python has no timezone database unless `tzdata` is installed) and the sh launcher runtime test.
 
 ## Troubleshooting
 

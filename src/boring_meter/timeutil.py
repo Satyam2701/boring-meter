@@ -23,16 +23,34 @@ def resolve_timezone(name: str = "") -> tzinfo:
         except Exception:
             pass
         return datetime.now().astimezone().tzinfo or timezone.utc
+    if name.upper() in ("UTC", "ETC/UTC", "Z"):
+        return timezone.utc
     try:
         from zoneinfo import ZoneInfo
 
         return ZoneInfo(name)
     except Exception:
+        if not _has_tz_database():
+            raise BMError(
+                "INVALID_CONFIG",
+                "Timezone '%s' cannot be used: this Python has no timezone database (common on Windows)." % name,
+                "Install the free 'tzdata' package (python -m pip install tzdata), or clear the setting to use "
+                "system time: boring-meter settings set time.timezone ''",
+            )
         raise BMError(
             "INVALID_CONFIG",
             "Unknown timezone '%s'." % name,
             "Use an IANA name such as America/New_York, or clear it: boring-meter settings set time.timezone ''",
         )
+
+
+def _has_tz_database() -> bool:
+    try:
+        from zoneinfo import available_timezones
+
+        return bool(available_timezones())
+    except Exception:
+        return False
 
 
 def parse_ts(value) -> Optional[datetime]:

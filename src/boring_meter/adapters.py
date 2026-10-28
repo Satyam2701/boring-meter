@@ -508,9 +508,10 @@ def _load_cache(path: Path) -> dict:
 def _excluded(project: Optional[str], excluded: List[str]) -> bool:
     if not project or not excluded:
         return False
+    project_n = os.path.normcase(os.path.normpath(project))
     for prefix in excluded:
-        p = os.path.normpath(os.path.expanduser(prefix))
-        if project == p or project.startswith(p.rstrip(os.sep) + os.sep):
+        p = os.path.normcase(os.path.normpath(os.path.expanduser(prefix)))
+        if project_n == p or project_n.startswith(p.rstrip(os.sep) + os.sep):
             return True
     return False
 

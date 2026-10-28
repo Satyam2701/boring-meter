@@ -1,4 +1,8 @@
-"""Integration tests: run the real launcher (bin/boring-meter) as a subprocess."""
+"""Integration tests: run the real launcher (bin/boring-meter) as a subprocess.
+
+On Windows the POSIX sh launcher cannot run, so the same tests invoke
+`python -m boring_meter` with src on PYTHONPATH, which is exactly what the launcher does.
+"""
 
 import hashlib
 import json
@@ -12,11 +16,12 @@ from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 from pathlib import Path
 
-from tests.helpers import ROOT, TempEnvTestCase
+from tests.helpers import ROOT, SRC, TempEnvTestCase
 from tests.fixtures.build import EXPECTED
 
 LAUNCHER = ROOT / "bin" / "boring-meter"
 HOOK = ROOT / "scripts" / "hook_instructions_loaded.py"
+ON_WINDOWS = os.name == "nt"
 
 
 def tree_hash(root: Path) -> str:
@@ -32,7 +37,12 @@ class CLITestCase(TempEnvTestCase):
     def run_cli(self, *args, env=None, input_text=None, cwd=None):
         full_env = dict(os.environ)
         full_env.update(env or {})
-        return subprocess.run([str(LAUNCHER)] + list(args), capture_output=True, text=True, env=full_env,
+        if ON_WINDOWS:
+            command = [sys.executable, "-m", "boring_meter"]
+            full_env["PYTHONPATH"] = os.pathsep.join(p for p in (str(SRC), full_env.get("PYTHONPATH")) if p)
+        else:
+            command = [str(LAUNCHER)]
+        return subprocess.run(command + list(args), capture_output=True, text=True, env=full_env,
                               input=input_text, cwd=str(cwd or self.tmp), timeout=60)
 
     def json_cli(self, *args, **kw):
@@ -292,6 +302,7 @@ class PrivacyOfflineRuntime(CLITestCase):
         self.assertNotIn("[synthetic prompt]", stored)
         self.assertNotIn("[synthetic]", stored)
 
+    @unittest.skipIf(ON_WINDOWS, "bin/boring-meter is a POSIX sh launcher; Windows has no /bin/sh")
     def test_missing_python_runtime(self):
         bindir = self.tmp / "bin"
         bindir.mkdir()
