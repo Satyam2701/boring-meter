@@ -14,6 +14,7 @@ from boring_meter.errors import BMError, from_os_error
 from boring_meter.paths import display_path, ensure_private_dir
 
 LOCK_STALE_SECONDS = 60.0
+IS_WINDOWS = os.name == "nt"
 # Windows opens descriptors in text mode unless O_BINARY is given, which would turn
 # every "\n" into "\r\n". The flag does not exist (and is not needed) elsewhere.
 O_BINARY = getattr(os, "O_BINARY", 0)
@@ -37,7 +38,11 @@ def file_lock(target: Path, timeout: float = 10.0):
         try:
             fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY | O_BINARY, 0o600)
             os.write(fd, ("%d %f" % (os.getpid(), time.time())).encode())
-        except FileExistsError:
+        except (FileExistsError, PermissionError) as exc:
+            # On Windows a lock file that is being deleted by its holder raises
+            # PermissionError instead of FileExistsError; both mean "busy".
+            if isinstance(exc, PermissionError) and not IS_WINDOWS:
+                raise from_os_error(exc, "lock", display_path(target))
             try:
                 age = time.time() - lock_path.stat().st_mtime
                 if age > LOCK_STALE_SECONDS:

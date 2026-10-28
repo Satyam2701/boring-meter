@@ -5,7 +5,9 @@ from tests.fixtures.build import EXPECTED
 
 from boring_meter import aggregate
 from boring_meter.errors import BMError
-from boring_meter.timeutil import Period, parse_ts, resolve_period, resolve_timezone
+import unittest
+
+from boring_meter.timeutil import Period, _has_tz_database, parse_ts, resolve_period, resolve_timezone
 
 UTC = timezone.utc
 ALL = Period(None, None, "All", "all", "UTC")
@@ -78,7 +80,7 @@ class TimeTests(TempEnvTestCase):
         self.assertIsNone(parse_ts(None))
 
     def test_week_boundaries(self):
-        tz = resolve_timezone("Asia/Kolkata")
+        tz = timezone(timedelta(hours=5, minutes=30))  # India Standard Time, no DST
         now = datetime(2026, 10, 28, 3, 0, tzinfo=UTC)  # 08:30 local
         p = resolve_period(week=True, tz=tz, now=now)
         self.assertEqual(p.start, datetime(2026, 10, 21, 18, 30, tzinfo=UTC))  # Oct 22 00:00 local
@@ -97,6 +99,7 @@ class TimeTests(TempEnvTestCase):
         self.assertTrue(p.contains(datetime(2026, 10, 2, 23, 59, tzinfo=UTC)))
         self.assertFalse(p.contains(datetime(2026, 10, 3, tzinfo=UTC)))
 
+    @unittest.skipUnless(_has_tz_database(), "no IANA timezone database (install tzdata)")
     def test_dst_aware_days(self):
         tz = resolve_timezone("America/New_York")
         now = datetime(2026, 11, 3, 12, tzinfo=UTC)  # DST ended Nov 1
@@ -113,3 +116,7 @@ class TimeTests(TempEnvTestCase):
             resolve_period(since="2026-10-05", until="2026-10-01", tz=tz)
         with self.assertRaises(BMError):
             resolve_timezone("Mars/Olympus")
+
+    def test_utc_needs_no_database(self):
+        self.assertIs(resolve_timezone("UTC"), UTC)
+        self.assertIs(resolve_timezone("Etc/UTC"), UTC)

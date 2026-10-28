@@ -151,17 +151,55 @@ class StoreTests(TempEnvTestCase):
     def test_concurrent_appends_threads(self):
         path = self.tmp / "events.jsonl"
 
+        errors = []
+
         def worker(n):
-            for i in range(25):
-                append_jsonl(path, {"worker": n, "i": i, "pad": "x" * 200})
+            try:
+                for i in range(25):
+                    append_jsonl(path, {"worker": n, "i": i, "pad": "x" * 200})
+            except Exception as exc:  # surface failures from threads
+                errors.append(repr(exc))
 
         threads = [threading.Thread(target=worker, args=(n,)) for n in range(8)]
         for t in threads:
             t.start()
         for t in threads:
             t.join()
+        self.assertEqual(errors, [])
         rows = [o for _n, o, e in iter_jsonl(path) if e is None]
         self.assertEqual(len(rows), 200)
+
+    def test_lock_treats_windows_permission_error_as_busy(self):
+        from unittest import mock
+        from boring_meter import store
+
+        target = self.tmp / "w.json"
+        real_open = os.open
+        calls = {"n": 0}
+
+        def flaky_open(path, flags, *args):
+            if str(path).endswith(".lock") and calls["n"] < 2:
+                calls["n"] += 1
+                raise PermissionError(13, "Access is denied")
+            return real_open(path, flags, *args)
+
+        with mock.patch.object(store, "IS_WINDOWS", True), mock.patch.object(store.os, "open", flaky_open):
+            with store.file_lock(target, timeout=2):
+                pass
+        self.assertEqual(calls["n"], 2)
+
+    def test_lock_permission_error_fatal_off_windows(self):
+        from unittest import mock
+        from boring_meter import store
+
+        def denied(*args, **kwargs):
+            raise PermissionError(13, "Permission denied")
+
+        with mock.patch.object(store, "IS_WINDOWS", False), mock.patch.object(store.os, "open", denied):
+            with self.assertRaises(BMError) as ctx:
+                with store.file_lock(self.tmp / "p.json", timeout=0.2):
+                    pass
+        self.assertEqual(ctx.exception.code, "PERMISSION_DENIED")
 
     def test_stale_lock_recovered(self):
         import time as _t
