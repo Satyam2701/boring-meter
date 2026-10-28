@@ -38,29 +38,45 @@ Other versions may work but have not been tested.
 
 ## Installation
 
-Requirements: Claude Code with plugin support and Python 3.9 or newer on `PATH` as `python3`.
+Requirements: Claude Code with plugin support and Python 3.9 or newer on `PATH` as `python3`. Supported on macOS and Linux. On Windows the test suite passes, but running the plugin inside Claude Code has not been verified.
 
-**Option 1, install from this folder (recommended):**
+**Install from GitHub (recommended):**
 
 ```bash
-claude plugin marketplace add /path/to/boring-meter
+claude plugin marketplace add Satyam2701/boring-meter
 ```
 
 ```bash
-claude plugin install boring-meter@boring-meter-local
+claude plugin install boring-meter@boring-meter
 ```
 
-Then start a new Claude Code session (or run `/reload-plugins` in a running one) and type `/boring-meter:usage`.
+Then start a new Claude Code session (or run `/reload-plugins` in a running one) and type `/boring-meter:usage`. Inside Claude Code the same steps are `/plugin marketplace add Satyam2701/boring-meter` and `/plugin install boring-meter@boring-meter`.
 
-**Option 2, try it for one session without installing:**
+The repository must be public, or your GitHub account must have access to it, with git or `gh` signed in on your machine.
+
+**Install from a local clone:**
 
 ```bash
-claude --plugin-dir /path/to/boring-meter
+git clone https://github.com/Satyam2701/boring-meter.git
 ```
 
-Inside Claude Code you can also run `/plugin marketplace add /path/to/boring-meter` and `/plugin install boring-meter@boring-meter-local`.
+```bash
+claude plugin marketplace add ./boring-meter
+```
 
-The command-line tool also works outside Claude Code: `/path/to/boring-meter/bin/boring-meter usage --week`. When the plugin is enabled, `boring-meter` is on the PATH of Claude's Bash tool.
+```bash
+claude plugin install boring-meter@boring-meter
+```
+
+**Try it for one session without installing:**
+
+```bash
+claude --plugin-dir ./boring-meter
+```
+
+**Updates:** run `claude plugin marketplace update boring-meter`. Claude Code installs a new release only when the `version` in `.claude-plugin/plugin.json` changes.
+
+The command-line tool also works outside Claude Code: `./boring-meter/bin/boring-meter usage --week` from a clone. When the plugin is enabled, `boring-meter` is on the PATH of Claude's Bash tool.
 
 See [docs/installation.md](docs/installation.md) for details and verification steps.
 
@@ -154,10 +170,10 @@ See [docs/troubleshooting.md](docs/troubleshooting.md). Start with `boring-meter
 ## Uninstall
 
 ```bash
-claude plugin uninstall boring-meter@boring-meter-local
+claude plugin uninstall boring-meter@boring-meter
 ```
 
-Optionally remove the marketplace with `claude plugin marketplace remove boring-meter-local`. Boring Meter's own data directory is not inside Claude Code's plugin data folder, so delete it explicitly if you want it gone: run `boring-meter settings delete-data --yes` before uninstalling, or remove the directory shown by `boring-meter settings path`.
+Optionally remove the marketplace with `claude plugin marketplace remove boring-meter`. Boring Meter's own data directory is not inside Claude Code's plugin data folder, so delete it explicitly if you want it gone: run `boring-meter settings delete-data --yes` before uninstalling, or remove the directory shown by `boring-meter settings path`.
 
 ## Contributing
 
