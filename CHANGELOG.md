@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- GitHub Actions test matrix for Ubuntu, macOS and Windows with Python 3.9 and 3.12 (configured, not yet run).
+- GitHub Actions test matrix for Ubuntu 24.04, macOS and Windows with Python 3.9 and 3.12; all six jobs pass.
+- Windows fixes found by CI: a lock file being released no longer makes another writer fail (it waits instead), excluded projects match with Windows path separators, and `UTC` works without a timezone database (other zone names explain how to install `tzdata`).
 - Windows storage fixes: JSONL appends and lock files use binary-mode descriptors so lines end in LF, and atomic writes retry briefly when `os.replace` is blocked by a reader.
 - Tests for disk-full handling during atomic writes (`STORAGE_FULL`), each platform's data directory choice, and Windows-friendly integration tests (`python -m boring_meter` instead of the sh launcher).
 

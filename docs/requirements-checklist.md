@@ -19,7 +19,7 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 | Terminal report and JSON export | Done | `report` (Markdown and JSON, `--save`, `--output`); every command has `--json` |
 | Before-and-after experiment recording | Done | `experiments.py`; unit and CLI tests |
 | Local settings and privacy controls | Done | `config.py`, `settings` command, exclusions, retention, export, delete |
-| Automated tests and documentation | Done | 144 tests; README and `docs/` |
+| Automated tests and documentation | Done | 147 tests; README and `docs/` |
 
 ## Acceptance scenarios
 
@@ -77,8 +77,8 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 | Local reporting without paid APIs | Yes |
 | Privacy and retention documented | Yes (`docs/privacy.md`) |
 | Experiments work with valid data | Yes |
-| Unit and integration tests pass | Yes, 144 of 144 on macOS with Python 3.9.6 and 3.14.7 (local runs). CI matrix configured, no run observed yet |
-| End-to-end tests in a supported environment | Yes on macOS with Claude Code 2.1.311; not run on Linux or Windows |
+| Unit and integration tests pass | Yes: 147 tests locally on macOS (Python 3.9.6 and 3.14.7), and in CI on Ubuntu 24.04, macOS and Windows with Python 3.9 and 3.12 (plugin validation skipped in CI; 2 platform skips on Windows) |
+| End-to-end tests in a supported environment | Yes on macOS with Claude Code 2.1.311. The CLI integration tests run on Linux and Windows in CI, but Claude Code itself was not run there |
 | Installation and troubleshooting documentation | Yes |
 | No secrets or unnecessary user content collected | Yes |
 | No em dashes | Yes (enforced by `test_copy_rules.py`) |
@@ -86,5 +86,5 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 ## Not done or partial
 
 - License: not selected (owner decision). `claude plugin validate --profile directory` flags this for directory submission.
-- Linux and Windows: implemented, not tested on a real Linux or Windows machine. What exists: unit tests that simulate each platform's data directory choice on macOS, Windows-specific fixes in `store.py` (binary-mode descriptors so JSONL lines end in LF, retry when `os.replace` hits a file another process has open) with mock-based tests, and a GitHub Actions matrix (Ubuntu, macOS, Windows; Python 3.9 and 3.12) that has not run yet. On Windows the integration tests call `python -m boring_meter` because `bin/boring-meter` is a POSIX sh script; whether Claude Code on Windows can run that launcher (for example through Git Bash) is not verified.
+- Linux and Windows: the full test suite passes in CI on both. Not verified there: installing the plugin in Claude Code and running the `bin/boring-meter` sh launcher from Claude Code on Windows (it may need Git Bash).
 - No hard Claude Code version gate: the transcript format is undocumented, so compatibility is detected from data instead.
