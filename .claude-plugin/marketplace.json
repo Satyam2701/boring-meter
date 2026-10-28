@@ -1,0 +1,14 @@
+{
+  "name": "boring-meter-local",
+  "description": "Local marketplace for installing the Boring Meter plugin from this repository.",
+  "owner": {
+    "name": "Satyam Tiwari"
+  },
+  "plugins": [
+    {
+      "name": "boring-meter",
+      "source": "./",
+      "description": "Local usage intelligence and optimization for Claude Code."
+    }
+  ]
+}

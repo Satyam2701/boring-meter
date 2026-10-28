@@ -1,0 +1,24 @@
+#!/bin/sh
+# Boring Meter launcher. Resolves the plugin root from this script's location
+# and runs the Python CLI with the standard library only.
+SCRIPT_PATH="$0"
+while [ -L "$SCRIPT_PATH" ]; do
+  LINK_TARGET=$(readlink "$SCRIPT_PATH")
+  case "$LINK_TARGET" in
+    /*) SCRIPT_PATH="$LINK_TARGET" ;;
+    *) SCRIPT_PATH="$(dirname "$SCRIPT_PATH")/$LINK_TARGET" ;;
+  esac
+done
+PLUGIN_ROOT=$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)
+
+if command -v python3 >/dev/null 2>&1; then
+  PY=python3
+elif command -v python >/dev/null 2>&1 && python -c 'import sys; sys.exit(0 if sys.version_info[0] == 3 else 1)' >/dev/null 2>&1; then
+  PY=python
+else
+  echo "Boring Meter error [RUNTIME_MISSING]: Python 3.9 or newer is required but was not found on PATH." >&2
+  echo "Hint: install Python 3 (for example from python.org or your package manager), then run the command again." >&2
+  exit 3
+fi
+
+PYTHONPATH="$PLUGIN_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" exec "$PY" -m boring_meter "$@"

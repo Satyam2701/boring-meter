@@ -1,0 +1,10 @@
+{
+  "name": "boring-meter",
+  "displayName": "Boring Meter",
+  "version": "0.1.0",
+  "description": "Local usage intelligence for Claude Code: usage summaries from your local session transcripts, evidence-based optimization findings, and before-and-after experiments. No network, no paid APIs.",
+  "author": {
+    "name": "Satyam Tiwari"
+  },
+  "keywords": ["usage", "tokens", "cost", "optimization", "local-first"]
+}

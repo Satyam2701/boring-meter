@@ -1,0 +1,17 @@
+{
+  "description": "Boring Meter: opt-in, metadata-only record of which instruction files Claude Code loads. Does nothing unless collection.instruction_events is enabled.",
+  "hooks": {
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hook_instructions_loaded.py"],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
