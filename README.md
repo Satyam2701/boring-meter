@@ -1,5 +1,7 @@
 # Boring Meter
 
+> **Beta (v0.1.0).** Boring Meter is in public beta. It works and is tested, but expect rough edges, and the Claude Code transcript format it reads may change without notice. Please report problems in [GitHub Issues](https://github.com/Satyam2701/boring-meter/issues).
+
 Local usage intelligence for Claude Code. Boring Meter reads the session transcripts Claude Code already keeps on your machine, summarizes the token usage they record, finds evidence-backed opportunities to reduce avoidable overhead, and helps you check whether a change actually worked.
 
 Understand your usage. Find avoidable overhead. Improve your workflow. Verify the result.
