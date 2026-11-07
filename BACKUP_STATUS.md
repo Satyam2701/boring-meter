@@ -39,7 +39,7 @@ Checked: 2026-11-07. Repository: https://github.com/Satyam2701/boring-meter (pub
 ## Risks before formatting the old MacBook
 
 - **Claude Code transcripts** in `~/.claude/projects` are personal usage history (Boring Meter's input data, including this project's build sessions). They are not in Git and will be lost unless you copy that folder separately. Not required to continue development.
-- **Old private repo `Satyam2701/boring-meter-old`** still exists on GitHub (not on the Mac). It contains the work email in PR #1 commits; delete it when ready. Unrelated to formatting.
+- Old private repo `Satyam2701/boring-meter-old` was deleted on 2026-11-07 (verified: GitHub reports it no longer exists).
 - Nothing else of this project exists only on the old machine.
 
 ## Missing information

@@ -45,4 +45,4 @@ claude --plugin-dir .                            # load this checkout for one se
 
 ## Immediate next steps
 
-See "Pending tasks" in [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md): delete the old `boring-meter-old` repo, run the beta with testers, verify Windows inside Claude Code.
+See "Pending tasks" in [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md): run the beta with testers, verify Windows inside Claude Code.

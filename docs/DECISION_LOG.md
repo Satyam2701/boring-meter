@@ -23,5 +23,5 @@ Decisions made while building and releasing Boring Meter (2026-10-27 to 2026-10-
 | 2026-10-28 | MIT license | Owner choice |
 | 2026-10-28 | Removed Claude co-author trailers from history; attribution disabled in owner's user settings | Owner request |
 | 2026-10-28 | Marketplace renamed `boring-meter-local` to `boring-meter` | Public install command `boring-meter@boring-meter` |
-| 2026-10-28 | Work email replaced in history; public repo recreated fresh; old repo renamed `boring-meter-old` | Merged PR refs keep old commits permanently and cannot be rewritten |
+| 2026-10-28 | Work email replaced in history; public repo recreated fresh; old repo renamed `boring-meter-old` (deleted 2026-11-07) | Merged PR refs keep old commits permanently and cannot be rewritten |
 | 2026-10-28 | Release marked Latest instead of pre-release; "Beta" in title, tag, notes, README, description | Pre-releases are hidden from the GitHub sidebar |

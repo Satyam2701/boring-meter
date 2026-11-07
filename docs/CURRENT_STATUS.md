@@ -23,7 +23,7 @@ Snapshot: 2026-11-07. VERIFIED unless marked.
 
 | Priority | Task | Status |
 | --- | --- | --- |
-| Owner | Delete the old private repo `Satyam2701/boring-meter-old` (it still contains the work email in PR #1 commits): Settings, Danger Zone, Delete | NEEDS ACTION |
+| Owner | Delete the old private repo `Satyam2701/boring-meter-old` (it contained the work email in PR #1 commits) | DONE 2026-11-07 |
 | Beta | Recruit 10 to 20 testers, collect `boring-meter report --save` output and feedback (PRD section 21) | Not started |
 | P1 | Verify or fix Windows launcher inside Claude Code (Git Bash or a `.cmd`/Python entry) | Not started |
 | P1 | Rule: costly cache rewrite after resuming a session past cache expiry | Idea |
