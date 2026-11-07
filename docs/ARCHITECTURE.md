@@ -7,7 +7,7 @@ All content VERIFIED against the code on 2026-11-07 unless marked.
 | Item | Choice | Notes |
 | --- | --- | --- |
 | Runtime | Python 3.9+ standard library only | No third-party packages, no lockfile needed. Tested on 3.9.6, 3.12 (CI), 3.14.7 |
-| Launcher | `bin/boring-meter`, POSIX sh | Finds `python3` (or `python` 3), runs `python -m boring_meter` with `src/` on `PYTHONPATH`. Exit 3 if Python is missing |
+| Launchers | `bin/boring-meter` (sh) and `bin/boring-meter.cmd` (Windows) | Try `python3`, `python`, `py -3`, run each to confirm 3.9+, then run `scripts/run_boring_meter.py`. Exit 3 if no Python; `--run-hook` exits 0 instead |
 | Host | Claude Code plugin | Verified with Claude Code 2.1.311 |
 | Tests | `unittest` | `python3 -m unittest discover -s tests -t .` |
 | CI | GitHub Actions `.github/workflows/tests.yml` | Ubuntu 24.04, macOS, Windows x Python 3.9 and 3.12 |
@@ -21,10 +21,13 @@ APIs and databases: NOT APPLICABLE. Boring Meter calls no external API and uses 
 ```text
 .claude-plugin/plugin.json        plugin manifest (name boring-meter, version 0.1.0, MIT)
 .claude-plugin/marketplace.json   one-plugin marketplace named boring-meter (source "./")
-bin/boring-meter                  launcher, on the Bash tool PATH while the plugin is enabled
+bin/boring-meter                  sh launcher (macOS, Linux, Git Bash), on the Bash tool PATH while the plugin is enabled
+bin/boring-meter.cmd              Windows launcher (PowerShell, CMD)
+scripts/run_boring_meter.py       shared Python entry point; finds src/ from its own location
+.gitattributes                    LF endings everywhere (a CRLF sh launcher breaks Git Bash), CRLF for .cmd
 skills/<name>/SKILL.md            usage, analyze, optimize, report, experiment, settings (user-only, disable-model-invocation)
                                   usage-intelligence, optimization-coach (model-invocable guidance)
-hooks/hooks.json                  InstructionsLoaded hook (exec form, python3)
+hooks/hooks.json                  InstructionsLoaded hook (runs the launcher with --run-hook)
 scripts/hook_instructions_loaded.py  opt-in metadata recorder; always exits 0
 src/boring_meter/                 engine (modules below)
 tests/unit, tests/integration     unittest suites; tests/fixtures/build.py generates synthetic data

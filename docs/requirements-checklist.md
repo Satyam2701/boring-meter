@@ -77,7 +77,7 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 | Local reporting without paid APIs | Yes |
 | Privacy and retention documented | Yes (`docs/privacy.md`) |
 | Experiments work with valid data | Yes |
-| Unit and integration tests pass | Yes: 147 tests locally on macOS (Python 3.9.6 and 3.14.7), and in CI on Ubuntu 24.04, macOS and Windows with Python 3.9 and 3.12 (plugin validation skipped in CI; 2 platform skips on Windows) |
+| Unit and integration tests pass | Yes: 154 tests locally on macOS (Python 3.9.6 and 3.14.7), and in CI on Ubuntu 24.04, macOS and Windows with Python 3.9 and 3.12 (plugin validation skipped in CI; POSIX-only tests skip on Windows) |
 | End-to-end tests in a supported environment | Yes on macOS with Claude Code 2.1.311. The CLI integration tests run on Linux and Windows in CI, but Claude Code itself was not run there |
 | Installation and troubleshooting documentation | Yes |
 | No secrets or unnecessary user content collected | Yes |
@@ -85,5 +85,5 @@ Audit of the PRD's P0 scope and Definition of Done against this implementation (
 
 ## Not done or partial
 
-- Linux and Windows: the full test suite passes in CI on both. Not verified there: installing the plugin in Claude Code and running the `bin/boring-meter` sh launcher from Claude Code on Windows (it may need Git Bash).
+- Linux and Windows: the full test suite passes in CI on both, including both Windows launchers (`.cmd` and sh under Git Bash). Not verified there: a full Claude Code session with the plugin installed.
 - No hard Claude Code version gate: the transcript format is undocumented, so compatibility is detected from data instead.

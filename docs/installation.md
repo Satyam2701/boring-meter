@@ -64,8 +64,9 @@ These steps were run on 2026-10-28 against an empty, isolated `CLAUDE_CONFIG_DIR
 ## How the pieces connect
 
 - `skills/<name>/SKILL.md` define `/boring-meter:<name>`. The six command skills set `disable-model-invocation: true`, so they run only when you type them. They tell Claude to run `boring-meter <command>` with the Bash tool, pre-approved through `allowed-tools`.
-- `bin/boring-meter` is a POSIX shell launcher. Claude Code adds a plugin's `bin/` folder to the Bash tool's PATH while the plugin is enabled. It finds Python 3 and runs `src/boring_meter`.
-- `hooks/hooks.json` registers an `InstructionsLoaded` hook. It does nothing unless you opt in with `boring-meter settings set collection.instruction_events true`.
+- `bin/boring-meter` (sh, for macOS, Linux and Git Bash on Windows) and `bin/boring-meter.cmd` (Windows PowerShell and CMD) are the launchers. Claude Code adds a plugin's `bin/` folder to the Bash tool's PATH while the plugin is enabled. Each launcher tries `python3`, `python` and `py -3`, runs each to confirm Python 3.9 or newer (skipping Microsoft Store placeholders), then runs `scripts/run_boring_meter.py`.
+- On Windows, Claude Code uses Git Bash for its Bash tool when Git for Windows is installed, and PowerShell otherwise. Both are supported.
+- `hooks/hooks.json` registers an `InstructionsLoaded` hook that runs `bin/boring-meter --run-hook instructions-loaded`. It does nothing unless you opt in with `boring-meter settings set collection.instruction_events true`, and it exits quietly when Python is missing.
 
 ## Uninstall
 

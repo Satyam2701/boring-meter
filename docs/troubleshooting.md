@@ -9,7 +9,9 @@ Errors print as `Boring Meter error [CODE]: message` with a `Hint:` line. With `
 | `/boring-meter:usage` is not offered | Plugin not installed, not enabled, or not reloaded | `claude plugin list`; install per [installation.md](installation.md); run `/reload-plugins` or start a new session |
 | `claude plugin validate` errors | Files moved or edited | Restore the layout: `.claude-plugin/plugin.json`, `skills/`, `hooks/hooks.json`, `bin/`, `src/` |
 | `boring-meter: command not found` inside Claude Code | Plugin `bin/` not on PATH (older Claude Code, or plugin disabled) | The skills fall back to `"${CLAUDE_PLUGIN_ROOT}/bin/boring-meter"`; or run the full path yourself |
-| `RUNTIME_MISSING` (exit 3) | No Python 3 on PATH | Install Python 3.9 or newer |
+| `RUNTIME_MISSING` (exit 3) | No working Python 3.9+ found as `python3`, `python` or `py -3` (Microsoft Store placeholders are skipped) | Install Python 3.9 or newer; on Windows, the python.org installer adds the `py` launcher |
+| `boring-meter` not recognized in PowerShell on Windows | Claude Code is using PowerShell (no Git for Windows) and the plugin `bin/` is not on its PATH | Run `& "<plugin folder>\bin\boring-meter.cmd" usage`, or install Git for Windows so Claude Code uses Git Bash |
+| Hook error on Windows at session start | Claude Code runs shell-form hooks in PowerShell when Git for Windows is missing, and PowerShell cannot run the sh launcher | Install Git for Windows. The hook only records data when you opt in, so the plugin works without it |
 | `UNSUPPORTED_PYTHON` (exit 3) | Python older than 3.9 | Put a newer `python3` first on PATH |
 | "No readable Claude Code transcripts were found" | Transcripts in a non-default place, `CLAUDE_CONFIG_DIR` differs, or permissions | `boring-meter sources`; `boring-meter settings set sources.extra_transcript_dirs /path` |
 | "No recorded requests in this period" | No data for that period (not zero usage) | Use `--all` or a wider `--days`; transcripts older than `cleanupPeriodDays` are deleted by Claude Code |

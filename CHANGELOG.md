@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Windows launcher fix: new `bin/boring-meter.cmd` for PowerShell and CMD; both launchers try `python3`, `python` and `py -3` and skip Microsoft Store placeholders; shared `scripts/run_boring_meter.py` entry point; the hook runs through the launcher and exits quietly without Python; `.gitattributes` keeps LF line endings. Verified in Windows CI under CMD and Git Bash.
 - Licensed under MIT (`LICENSE`, `license` in plugin.json).
 - GitHub Actions test matrix for Ubuntu 24.04, macOS and Windows with Python 3.9 and 3.12; all six jobs pass.
 - Windows fixes found by CI: a lock file being released no longer makes another writer fail (it waits instead), excluded projects match with Windows path separators, and `UTC` works without a timezone database (other zone names explain how to install `tzdata`).

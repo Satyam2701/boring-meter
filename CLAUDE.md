@@ -18,7 +18,7 @@ Update the relevant docs (and `CHANGELOG.md`) whenever functionality or architec
 ## Commands
 
 ```bash
-python3 -m unittest discover -s tests -t .      # full suite (147 tests)
+python3 -m unittest discover -s tests -t .      # full suite (154 tests)
 ./bin/boring-meter usage --week                  # run the CLI from the repo
 ./bin/boring-meter doctor                        # installation check
 claude plugin validate .                         # plugin manifest check
@@ -32,7 +32,7 @@ claude --plugin-dir .                            # load this checkout for one se
 - Never fabricate numbers: unknown stays `None`, never 0. No savings claims without a verified experiment.
 - Never modify user files without explicit confirmation (see `optimize.py`).
 - Transcript format is undocumented: keep parsing defensive and bump `CACHE_FORMAT` in `adapters.py` when scan output changes.
-- Keep Linux/Windows compatibility (CI matrix covers both).
+- Keep Linux/Windows compatibility (CI matrix covers both). Launchers: `bin/boring-meter` (sh) and `bin/boring-meter.cmd`; both call `scripts/run_boring_meter.py`. Keep `.gitattributes` LF rules (CRLF breaks the sh launcher in Git Bash).
 - No co-author attribution lines in commits or PR descriptions (owner preference).
 - For releases, bump `version` in `.claude-plugin/plugin.json`; see the release process in `docs/CURRENT_STATUS.md`.
 - `claude plugin validate` warns that this `CLAUDE.md` is at the plugin root. It is intended for development sessions and is not loaded as plugin context; the warning is expected.
@@ -45,4 +45,4 @@ claude --plugin-dir .                            # load this checkout for one se
 
 ## Immediate next steps
 
-See "Pending tasks" in [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md): run the beta with testers, verify Windows inside Claude Code.
+See "Pending tasks" in [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md): run the beta with testers, and have a tester confirm a real Claude Code session on Windows.
