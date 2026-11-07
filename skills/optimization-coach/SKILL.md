@@ -11,4 +11,4 @@ Base advice on evidence from this user's own data:
 4. Suggest validating any change with `/boring-meter:experiment`: record two or more comparable baseline runs and two or more follow-up runs, then record task quality.
 5. Do not promise percentages or savings. Only quote differences from `boring-meter experiment show ID`, using its classification (verified, directional, inconclusive, invalid).
 
-If `boring-meter` is not on PATH, use `"${CLAUDE_PLUGIN_ROOT}/bin/boring-meter"`.
+If `boring-meter` is not on PATH, use `"${CLAUDE_PLUGIN_ROOT}/bin/boring-meter"`. On Windows without Git Bash (PowerShell), use `& "${CLAUDE_PLUGIN_ROOT}/bin/boring-meter.cmd"`.

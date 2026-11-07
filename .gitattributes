@@ -1,0 +1,6 @@
+# Keep LF line endings for everything, even in Windows checkouts with core.autocrlf.
+# A CRLF shell launcher fails in Git Bash.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.png binary
+*.zip binary

@@ -6,8 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hook_instructions_loaded.py"],
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/boring-meter\" --run-hook instructions-loaded",
             "timeout": 10
           }
         ]

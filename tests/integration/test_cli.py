@@ -1,7 +1,8 @@
 """Integration tests: run the real launcher (bin/boring-meter) as a subprocess.
 
-On Windows the POSIX sh launcher cannot run, so the same tests invoke
-`python -m boring_meter` with src on PYTHONPATH, which is exactly what the launcher does.
+On Windows the main suite calls scripts/run_boring_meter.py with the test interpreter
+(the same entry point both launchers use), so each CI job tests its own Python version.
+LauncherTests cover bin/boring-meter.cmd and the sh launcher under Git Bash separately.
 """
 
 import hashlib
@@ -16,12 +17,15 @@ from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 from pathlib import Path
 
-from tests.helpers import ROOT, SRC, TempEnvTestCase
+from tests.helpers import ROOT, TempEnvTestCase
 from tests.fixtures.build import EXPECTED
 
 LAUNCHER = ROOT / "bin" / "boring-meter"
+CMD_LAUNCHER = ROOT / "bin" / "boring-meter.cmd"
+ENTRY = ROOT / "scripts" / "run_boring_meter.py"
 HOOK = ROOT / "scripts" / "hook_instructions_loaded.py"
 ON_WINDOWS = os.name == "nt"
+GIT_BASH = Path(r"C:\Program Files\Git\bin\bash.exe")
 
 
 def tree_hash(root: Path) -> str:
@@ -38,8 +42,7 @@ class CLITestCase(TempEnvTestCase):
         full_env = dict(os.environ)
         full_env.update(env or {})
         if ON_WINDOWS:
-            command = [sys.executable, "-m", "boring_meter"]
-            full_env["PYTHONPATH"] = os.pathsep.join(p for p in (str(SRC), full_env.get("PYTHONPATH")) if p)
+            command = [sys.executable, str(ENTRY)]
         else:
             command = [str(LAUNCHER)]
         return subprocess.run(command + list(args), capture_output=True, text=True, env=full_env,
@@ -314,9 +317,82 @@ class PrivacyOfflineRuntime(CLITestCase):
                               env={"PATH": str(bindir), "HOME": str(self.tmp)})
         self.assertEqual(proc.returncode, 3)
         self.assertIn("RUNTIME_MISSING", proc.stderr)
+        hook = subprocess.run(["/bin/sh", str(LAUNCHER), "--run-hook", "instructions-loaded"], capture_output=True,
+                              text=True, input="{}", env={"PATH": str(bindir), "HOME": str(self.tmp)})
+        self.assertEqual(hook.returncode, 0, "a hook must never fail when Python is missing")
+        self.assertEqual(hook.stderr, "")
+
+
+class LauncherTests(CLITestCase):
+    with_fixtures = False
+
+    def test_entry_point(self):
+        proc = subprocess.run([sys.executable, str(ENTRY), "--version"], capture_output=True, text=True, timeout=60)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("boring-meter", proc.stdout)
+
+    def test_entry_point_ignores_unknown_hook(self):
+        proc = subprocess.run([sys.executable, str(ENTRY), "--run-hook", "no-such-hook"], capture_output=True,
+                              text=True, input="{}", timeout=60)
+        self.assertEqual(proc.returncode, 0)
+
+    @unittest.skipIf(ON_WINDOWS, "POSIX launcher test")
+    def test_sh_launcher_skips_broken_python_stub(self):
+        bindir = self.tmp / "bin"
+        bindir.mkdir()
+        stub = bindir / "python3"
+        stub.write_text("#!/bin/sh\necho 'Python was not found; run without arguments to install from the Store' >&2\nexit 9009\n")
+        stub.chmod(0o755)
+        os.symlink(sys.executable, str(bindir / "python"))
+        for tool in ("dirname", "readlink"):
+            found = shutil.which(tool)
+            if found:
+                os.symlink(found, str(bindir / tool))
+        proc = subprocess.run(["/bin/sh", str(LAUNCHER), "--version"], capture_output=True, text=True,
+                              env={"PATH": str(bindir), "HOME": str(self.tmp)}, timeout=60)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("boring-meter", proc.stdout)
+
+    @unittest.skipUnless(ON_WINDOWS, "Windows launcher test")
+    def test_cmd_launcher_runs(self):
+        proc = subprocess.run(["cmd", "/c", str(CMD_LAUNCHER), "--version"], capture_output=True, text=True, timeout=120)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("boring-meter", proc.stdout)
+
+    @unittest.skipUnless(ON_WINDOWS, "Windows launcher test")
+    def test_cmd_launcher_without_python(self):
+        system32 = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32")
+        env = {"PATH": system32, "SystemRoot": os.environ.get("SystemRoot", r"C:\Windows")}
+        proc = subprocess.run(["cmd", "/c", str(CMD_LAUNCHER), "usage"], capture_output=True, text=True, env=env, timeout=120)
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        self.assertIn("RUNTIME_MISSING", proc.stderr)
+        hook = subprocess.run(["cmd", "/c", str(CMD_LAUNCHER), "--run-hook", "instructions-loaded"], capture_output=True,
+                              text=True, input="{}", env=env, timeout=120)
+        self.assertEqual(hook.returncode, 0)
+
+    @unittest.skipUnless(ON_WINDOWS and GIT_BASH.exists(), "needs Git for Windows")
+    def test_sh_launcher_under_git_bash(self):
+        launcher = str(LAUNCHER).replace("\\", "/")
+        proc = subprocess.run([str(GIT_BASH), launcher, "--version"], capture_output=True, text=True, timeout=120)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("boring-meter", proc.stdout)
+        hook = subprocess.run([str(GIT_BASH), launcher, "--run-hook", "instructions-loaded"], capture_output=True,
+                              text=True, input="{}", timeout=120)
+        self.assertEqual(hook.returncode, 0, hook.stderr)
 
 
 class HookScript(CLITestCase):
+    def test_hook_through_launcher(self):
+        self.run_cli("settings", "set", "collection.instruction_events", "true")
+        target = self.tmp / "CLAUDE.md"
+        target.write_text("one\n")
+        payload = json.dumps({"session_id": "s9", "file_path": str(target), "hook_event_name": "InstructionsLoaded"})
+        command = (["cmd", "/c", str(CMD_LAUNCHER)] if ON_WINDOWS else [str(LAUNCHER)]) + ["--run-hook", "instructions-loaded"]
+        proc = subprocess.run(command, capture_output=True, text=True, input=payload, env=dict(os.environ), timeout=120)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        rows = (self.data / "events" / "instructions.jsonl").read_text().splitlines()
+        self.assertEqual(len(rows), 1)
+
     def run_hook(self, payload: str):
         return subprocess.run([sys.executable, str(HOOK)], input=payload, capture_output=True, text=True,
                               env=dict(os.environ), timeout=30)

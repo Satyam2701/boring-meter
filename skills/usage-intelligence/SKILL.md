@@ -8,7 +8,7 @@ To answer usage questions, get data from Boring Meter instead of guessing:
 - `boring-meter usage --json` (add `--today`, `--week`, `--days N`, or `--session ${CLAUDE_SESSION_ID}` for this session)
 - `boring-meter sources` to see which data exists
 
-If `boring-meter` is not on PATH, use `"${CLAUDE_PLUGIN_ROOT}/bin/boring-meter"`.
+If `boring-meter` is not on PATH, use `"${CLAUDE_PLUGIN_ROOT}/bin/boring-meter"`. On Windows without Git Bash (PowerShell), use `& "${CLAUDE_PLUGIN_ROOT}/bin/boring-meter.cmd"`.
 
 How to interpret the output:
 - Token counts are observed values copied from Claude Code's local transcripts. Input, output, cache read, and cache write are separate categories; "total tokens" is their sum.
