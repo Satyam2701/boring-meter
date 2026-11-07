@@ -41,8 +41,8 @@ claude --plugin-dir .                            # load this checkout for one se
 
 - Push with the Satyam2701 account. If `gh` has several accounts, use `GH_TOKEN=$(gh auth token -h github.com -u Satyam2701) git push`.
 - Pushing workflow files needs the `workflow` scope: `gh auth refresh -h github.com -s workflow` (while Satyam2701 is active).
+- Commit email must be the noreply address `34920689+Satyam2701@users.noreply.github.com`: GitHub rejects pushes that publish the private Gmail address (GH007).
 
 ## Immediate next steps
 
 See "Pending tasks" in [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md): delete the old `boring-meter-old` repo, run the beta with testers, verify Windows inside Claude Code.
-- Commit email must be the noreply address `34920689+Satyam2701@users.noreply.github.com`: GitHub rejects pushes that publish the private Gmail address (GH007).
